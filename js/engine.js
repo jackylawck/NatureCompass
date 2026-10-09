@@ -2,7 +2,7 @@
  * js/engine.js - 見性羅盤確定性計分核心
  * 
  * 架構分層：
- * 1. calculate(responses): 輸入校驗、作答合法性審計、中繼資料完整性防禦、提取 rawNet
+ * 1. calculate(responses): 輸入校驗、作答合法性審計、提取 rawNet
  * 2. rankAndWeigh(rawNet): 純數學映射、全維度型別契約、最大餘數法百分比、平手排序
  */
 
@@ -10,7 +10,7 @@ import { questionsStructure } from './questions.js';
 
 export class ScoringEngine {
   /**
-   * 第一層：解析作答並提取原始淨分 (含嚴格防禦性校驗)
+   * 第一層：解析作答並提取原始淨分 (含單向注意力檢查支援)
    * @param {Array<{ id: number, most: string, least: string }>} responses
    */
   static calculate(responses) {
@@ -32,26 +32,35 @@ export class ScoringEngine {
       const q = qMap.get(resp.id);
       if (!q) continue;
 
-      // 檢查 1: 同題 Most 與 Least 絕不可相同
-      if (resp.most && resp.least && resp.most === resp.least) {
-        return { isValid: false, invalidReason: `IDENTICAL_CHOICE_AT_Q${resp.id}` };
-      }
-
-      // 注意力校驗題處理 (拒絕缺失 expected 設定的中繼資料漏洞)
+      // 注意力校驗題處理 (支援單向 Most 檢查契約)
       if (q.type === 'attention_check') {
         const expectedMost = q.expected?.most;
         const expectedLeast = q.expected?.least;
 
-        if (!expectedMost || !expectedLeast) {
-          return { isValid: false, invalidReason: `MISSING_EXPECTED_AT_Q${resp.id}` };
+        // Most 為必填錨點
+        if (expectedMost === null || expectedMost === undefined || typeof expectedMost !== 'string') {
+          return { isValid: false, invalidReason: `MISSING_EXPECTED_MOST_AT_Q${resp.id}` };
         }
 
-        if (resp.most !== expectedMost) attentionPassed = false;
-        if (resp.least !== expectedLeast) attentionPassed = false;
+        if (resp.most !== expectedMost) {
+          attentionPassed = false;
+        }
+
+        // Least 為可選：僅在明確定義字串時進行校驗 (null / undefined 視為不檢查)
+        const checkLeast = expectedLeast !== null && expectedLeast !== undefined;
+        if (checkLeast && resp.least !== expectedLeast) {
+          attentionPassed = false;
+        }
+        
         continue;
       }
 
-      // 檢查 2: 防禦無效 key（防靜默跳過導致淨偏好不為 0）
+      // 常規題檢查 1: 同題 Most 與 Least 絕不可相同
+      if (resp.most && resp.least && resp.most === resp.least) {
+        return { isValid: false, invalidReason: `IDENTICAL_CHOICE_AT_Q${resp.id}` };
+      }
+
+      // 常規題檢查 2: 防禦無效 key（防靜默跳過導致淨偏好不為 0）
       const mostOpt = q.options.find(o => o.key === resp.most);
       const leastOpt = q.options.find(o => o.key === resp.least);
 
@@ -96,7 +105,7 @@ export class ScoringEngine {
       throw new TypeError('rankAndWeigh requires a rawNet object');
     }
 
-    // 嚴格維度契約：D, I, S, C 必須齊全且為數值，防止空物件引發 TypeError
+    // 嚴格維度契約：D, I, S, C 必須齊全且為數值
     const requiredDims = ['D', 'I', 'S', 'C'];
     if (!requiredDims.every(d => typeof rawNet[d] === 'number' && !Number.isNaN(rawNet[d]))) {
       throw new TypeError('rankAndWeigh requires numeric D, I, S, C fields');
