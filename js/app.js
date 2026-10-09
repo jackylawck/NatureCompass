@@ -4,7 +4,7 @@
  * 1. 題卡步進與作答狀態暫存 (純本機記憶體，零伺服器)
  * 2. 鍵盤快速流 (1-4 選 Most, Q-R 選 Least, Enter/Arrow 下一題)
  * 3. 呼叫 ScoringEngine 與 CompassChart 渲染報告
- * 4. 處理注意力檢查警示橫幅與多分支風格文案 (100% 雙語對齊、零 CSP 違規、單向注意力題適配)
+ * 4. 支援字母序 Archetype 與 Trait 深度解析 (雙語對齊、零 CSP 違規、單向注意力題適配)
  */
 
 import { i18n } from './i18n.js';
@@ -241,7 +241,7 @@ class CompassApp {
     const nameStr = this.assesseeName ? `【${this.assesseeName}】` : '';
     const isEn = i18n.currentLocale === 'en';
 
-    // 匹配主要風格文案 (單高、雙高、三高、全平手)
+    // 1. 匹配主要風格總覽
     let primaryMessage = '';
     const stylesStr = res.primary.join(' / ');
     if (res.primary.length === 1) {
@@ -252,6 +252,38 @@ class CompassApp {
       primaryMessage = i18n.t('ui.report.primary_triple').replace('{styles}', stylesStr);
     } else {
       primaryMessage = i18n.t('ui.report.primary_all_tie');
+    }
+
+    // 2. 獲取深度性格畫像 (遵循 Alphabetical Key: C < D < I < S)
+    const profilesDict = i18n.t('profiles') || {};
+    let profileDetailHtml = '';
+
+    if (res.primary.length === 1) {
+      // 單一維度：渲染 Trait 深度解析 (優勢、盲點、教練建議)
+      const primaryDim = res.primary[0];
+      const traitData = profilesDict.traits?.[primaryDim];
+      if (traitData) {
+        profileDetailHtml = `
+          <div class="archetype-card">
+            <h3 style="margin-top:0; color:var(--primary-color);">${traitData.name} · ${traitData.tagline}</h3>
+            <p><strong>${isEn ? 'Key Strengths:' : '核心優勢：'}</strong> ${traitData.strengths}</p>
+            <p><strong>${isEn ? 'Potential Blindspots:' : '潛在盲點：'}</strong> ${traitData.blindspots}</p>
+            <p><strong>${isEn ? 'Coaching Focus:' : '教練對話聚焦：'}</strong> ${traitData.coaching_tips}</p>
+          </div>
+        `;
+      }
+    } else {
+      // 雙維、三維或全平手：依規範化鍵名提取 Archetype 原型
+      const archetypeKey = [...res.primary].sort().join('');
+      const archetypeData = profilesDict.archetypes?.[archetypeKey];
+      if (archetypeData) {
+        profileDetailHtml = `
+          <div class="archetype-card">
+            <h3 style="margin-top:0; color:var(--primary-color);">${archetypeData.title}</h3>
+            <p style="margin-bottom:0;">${archetypeData.desc}</p>
+          </div>
+        `;
+      }
     }
 
     // 注意力檢查橫幅（雙語動態適配）
@@ -279,6 +311,8 @@ class CompassApp {
         <div class="summary-card">
           <p class="primary-summary"><strong>${primaryMessage}</strong></p>
         </div>
+
+        ${profileDetailHtml}
 
         <div class="report-grid">
           <div class="radar-box">
