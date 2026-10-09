@@ -75,11 +75,35 @@
 
   <!-- 主視圖 -->
   <main id="app-root" class="container">
+    <!-- 非高利害邊界告示 (ADR-003: 葉節點契約) -->
     <aside class="charter-box" role="note">
       <strong data-i18n="ui.charter.title">非高利害探索邊界宣告</strong>
       <p data-i18n="ui.charter.notice">本工具專供個人自我覺察與教練對話探索，嚴禁直接用於招聘篩選、績效裁決或任何高利害人力決策。</p>
     </aside>
 
+    <!-- 📖 探索指引與操作說明（可折疊箱，全部採用純文字葉節點標註） -->
+    <details class="guide-accordion" id="guide-box">
+      <summary class="guide-summary" data-i18n="ui.guide.toggle_btn">📖 探索指引與操作說明</summary>
+      <div class="guide-content">
+        <h3 class="guide-heading" data-i18n="ui.guide.title">如何使用見性羅盤？</h3>
+        <div class="guide-grid">
+          <div class="guide-card">
+            <strong data-i18n="ui.guide.rule_title">1. 作答規則（強迫選擇）</strong>
+            <p data-i18n="ui.guide.rule_desc">每組情境包含 4 個選項。請憑第一直覺，必須選出 1 個「最符合 [+]」與 1 個「最不符 [-]」。兩者不可重複。</p>
+          </div>
+          <div class="guide-card">
+            <strong data-i18n="ui.guide.mindset_title">2. 探索心態</strong>
+            <p data-i18n="ui.guide.mindset_desc">本工具並非能力測驗，選項亦無優劣對錯之分。請以日常真實的職場協作慣性作答，無需猜測「理想答案」。</p>
+          </div>
+          <div class="guide-card">
+            <strong data-i18n="ui.guide.keyboard_title">3. 鍵盤快捷操作（電腦端推薦）</strong>
+            <p data-i18n="ui.guide.keyboard_desc">數字鍵 [1 - 4]：選取最符合 [+] ｜ 字母鍵 [Q, W, E, R]：選取最不符 [-] ｜ 左右方向鍵 [← / →]：切換題目。</p>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- 評估與題卡互動容器 -->
     <section id="assessment-container" class="card" aria-labelledby="form-label">
       <div class="input-group">
         <label id="form-label" for="assessee-name" data-i18n="ui.form.name_label">受測者稱謂（選填）：</label>
