@@ -3,7 +3,7 @@
  * 
  * 架構分層：
  * 1. calculate(responses): 輸入校驗、作答合法性審計、提取 rawNet
- * 2. rankAndWeigh(rawNet): 純數學映射、全維度型別契約、最大餘數法百分比、平手排序
+ * 2. rankAndWeigh(rawNet): 純數學映射、全維度型別契約、最大餘數法百分比、同分確定性排序
  */
 
 import { questionsStructure } from './questions.js';
@@ -11,7 +11,7 @@ import { questionsStructure } from './questions.js';
 export class ScoringEngine {
   /**
    * 第一層：解析作答並提取原始淨分 (含單向注意力檢查支援)
-   * @param {Array<{ id: number, most: string, least: string }>} responses
+   * @param {Array<{ id: number, most: string, least: string|null }>} responses
    */
   static calculate(responses) {
     if (!Array.isArray(responses) || responses.length === 0) {
@@ -60,7 +60,7 @@ export class ScoringEngine {
         return { isValid: false, invalidReason: `IDENTICAL_CHOICE_AT_Q${resp.id}` };
       }
 
-      // 常規題檢查 2: 防禦無效 key（防靜默跳過導致淨偏好不為 0）
+      // 常規題檢查 2: 防禦無效 key 或遺漏作答（防靜默跳過導致淨偏好不為 0）
       const mostOpt = q.options.find(o => o.key === resp.most);
       const leastOpt = q.options.find(o => o.key === resp.least);
 
@@ -147,10 +147,15 @@ export class ScoringEngine {
       flooredWeights[fractionList[i].dim] += 1;
     }
 
-    // 3. 序數排名與平手處理
+    // 3. 序數排名與平手處理 (加入二級字母排序，保證平手時確定性輸出)
     const sortedDims = Object.entries(rawNet)
       .map(([dim, score]) => ({ dim, score }))
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return a.dim.localeCompare(b.dim); // 同分時按 C < D < I < S 嚴格字母序排序
+      });
 
     const ranking = [];
     let currentRank = 1;
@@ -172,7 +177,11 @@ export class ScoringEngine {
     }
 
     const maxScore = sortedDims[0].score;
-    const primary = sortedDims.filter(d => d.score === maxScore).map(d => d.dim);
+    // primary 維度列表自動保證依字母順序排列
+    const primary = sortedDims
+      .filter(d => d.score === maxScore)
+      .map(d => d.dim)
+      .sort();
 
     return {
       ranking,
