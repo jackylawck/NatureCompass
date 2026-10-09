@@ -2,8 +2,8 @@
  * js/engine.js - 見性羅盤確定性計分核心
  * 
  * 架構分層：
- * 1. calculate(responses): 輸入校驗、作答合法性審計、提取 rawNet
- * 2. rankAndWeigh(rawNet): 純數學映射、最大餘數法百分比、平手排序
+ * 1. calculate(responses): 輸入校驗、作答合法性審計、中繼資料完整性防禦、提取 rawNet
+ * 2. rankAndWeigh(rawNet): 純數學映射、全維度型別契約、最大餘數法百分比、平手排序
  */
 
 import { questionsStructure } from './questions.js';
@@ -37,13 +37,17 @@ export class ScoringEngine {
         return { isValid: false, invalidReason: `IDENTICAL_CHOICE_AT_Q${resp.id}` };
       }
 
-      // 注意力校驗題處理
+      // 注意力校驗題處理 (拒絕缺失 expected 設定的中繼資料漏洞)
       if (q.type === 'attention_check') {
         const expectedMost = q.expected?.most;
         const expectedLeast = q.expected?.least;
 
-        if (expectedMost && resp.most !== expectedMost) attentionPassed = false;
-        if (expectedLeast && resp.least !== expectedLeast) attentionPassed = false;
+        if (!expectedMost || !expectedLeast) {
+          return { isValid: false, invalidReason: `MISSING_EXPECTED_AT_Q${resp.id}` };
+        }
+
+        if (resp.most !== expectedMost) attentionPassed = false;
+        if (resp.least !== expectedLeast) attentionPassed = false;
         continue;
       }
 
@@ -84,7 +88,7 @@ export class ScoringEngine {
   }
 
   /**
-   * 第二層：純數學映射（可直接用於單元測試注入）
+   * 第二層：純數學映射（全維度嚴格型別校驗）
    * @param {{ D: number, I: number, S: number, C: number }} rawNet
    */
   static rankAndWeigh(rawNet) {
@@ -92,12 +96,18 @@ export class ScoringEngine {
       throw new TypeError('rankAndWeigh requires a rawNet object');
     }
 
+    // 嚴格維度契約：D, I, S, C 必須齊全且為數值，防止空物件引發 TypeError
+    const requiredDims = ['D', 'I', 'S', 'C'];
+    if (!requiredDims.every(d => typeof rawNet[d] === 'number' && !Number.isNaN(rawNet[d]))) {
+      throw new TypeError('rankAndWeigh requires numeric D, I, S, C fields');
+    }
+
     // 1. 基線平移 +24，映射至 [0, 48]，總基數恆為 96
     const shifted = {
-      D: (rawNet.D ?? 0) + 24,
-      I: (rawNet.I ?? 0) + 24,
-      S: (rawNet.S ?? 0) + 24,
-      C: (rawNet.C ?? 0) + 24
+      D: rawNet.D + 24,
+      I: rawNet.I + 24,
+      S: rawNet.S + 24,
+      C: rawNet.C + 24
     };
     const totalShifted = shifted.D + shifted.I + shifted.S + shifted.C;
 
