@@ -1,50 +1,150 @@
 /**
- * css/print.css - 列印與 PDF 匯出優化
+ * css/print.css - 見性羅盤 列印與 PDF 匯出專用排版樣式
+ * 核心目標：
+ * 1. 精準收斂於單張 A4 內 (Single-page A4 Fit)
+ * 2. 強制保留色彩 (print-color-adjust: exact)
+ * 3. 隱藏所有互動元件、輸入框與導航
  */
+
 @page {
   size: A4 portrait;
-  margin: 15mm;
+  margin: 10mm 12mm;
 }
 
 @media print {
-  :root {
-    --radar-fill: rgba(2, 132, 199, 0.15);
-    --radar-stroke: #0284c7;
-    --radar-grid: #cbd5e1;
-    --radar-axis: #94a3b8;
-    --radar-text: #000000;
+  /* 1. 強制色彩保真，防止進度條與卡片背景被瀏覽器漂白 */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
+  /* 2. 徹底隱藏無關之操作 UI、輸入框與導覽元素 */
   .locale-nav,
   .btn-action,
-  .charter-box {
+  .report-actions,
+  .charter-box,
+  .guide-accordion,
+  .input-group,
+  .card-footer,
+  .alert-banner {
     display: none !important;
   }
 
+  /* 3. 紙張排版重置 */
   body {
     background: #ffffff !important;
-    color: #000000 !important;
-    font-size: 11pt;
-  }
-
-  .container {
-    width: 100% !important;
-    max-width: none !important;
+    color: #0f172a !important;
+    font-size: 10pt;
+    line-height: 1.4;
     margin: 0 !important;
     padding: 0 !important;
   }
 
-  .compass-svg.print-friendly {
-    display: block;
-    width: 75% !important;
-    max-width: 360px !important;
-    margin: 15mm auto !important;
+  .container,
+  #app-root,
+  .card {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  /* 4. 報告區塊佈局與防分頁截斷 */
+  .report-section {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  .report-section {
-    page-break-inside: avoid;
-    break-inside: avoid;
+  .report-header h2 {
+    font-size: 16pt !important;
+    margin-bottom: 2mm !important;
+    color: #0f172a !important;
+  }
+
+  .report-header .timestamp {
+    font-size: 8.5pt !important;
+    color: #64748b !important;
+    margin-bottom: 4mm !important;
+  }
+
+  .archetype-card {
+    border: 1px solid #cbd5e1 !important;
+    border-left: 4px solid #0284c7 !important;
+    background: #f8fafc !important;
+    padding: 3mm 4mm !important;
+    margin-bottom: 4mm !important;
+  }
+
+  .archetype-card h3 {
+    font-size: 11pt !important;
+  }
+
+  .archetype-card p {
+    font-size: 9pt !important;
+    margin: 1.5mm 0 !important;
+  }
+
+  /* 5. SVG 向量圖形精確顯影 */
+  .compass-svg.print-friendly {
+    display: block !important;
+    width: 65% !important;
+    max-width: 280px !important;
+    margin: 4mm auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .radar-grid-ring {
+    stroke: #cbd5e1 !important;
+    fill: none !important;
+  }
+
+  .radar-axis-line {
+    stroke: #94a3b8 !important;
+  }
+
+  .radar-polygon {
+    fill: rgba(2, 132, 199, 0.18) !important;
+    stroke: #0284c7 !important;
+    stroke-width: 2px !important;
+  }
+
+  .radar-vertex {
+    fill: #0284c7 !important;
+  }
+
+  .radar-label {
+    fill: #0f172a !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+  }
+
+  /* 6. 百分比長條圖色彩保全 */
+  .weight-bar-bg {
+    background: #e2e8f0 !important;
+    border: 1px solid #cbd5e1 !important;
+    height: 6mm !important;
+  }
+
+  .weight-bar-fill {
+    background: #0284c7 !important;
+  }
+
+  /* 7. 免責聲明文字微調 */
+  .disclaimer-footer {
+    margin-top: 4mm !important;
+    border-top: 1px solid #e2e8f0 !important;
+    padding-top: 2mm !important;
+  }
+
+  .disclaimer-footer p {
+    font-size: 7.5pt !important;
+    color: #64748b !important;
+    line-height: 1.3 !important;
   }
 }
