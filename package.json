@@ -1,0 +1,16 @@
+{
+  "name": "nature-compass",
+  "version": "1.0.0",
+  "description": "Zero-server behavioral reflection and self-discovery sandbox",
+  "type": "module",
+  "engines": {
+    "node": ">=18.13.0"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "jsdom": "^26.0.0"
+  },
+  "license": "MIT"
+}
