@@ -1,6 +1,11 @@
+/**
+ * locales/zh-Hant/ui.js - 繁體中文 UI 字典
+ * License: CC BY-NC-SA 4.0 (Non-Commercial, ShareAlike)
+ */
+
 export default {
   meta: {
-    title: "見性羅盤 | Nature Compass",
+    title: "見性羅盤",
     tagline: "零伺服器・性格特質與行為偏好探索沙盒"
   },
   charter: {
@@ -36,10 +41,10 @@ export default {
   },
   chart: {
     dims: {
-      D: "D (主導/挑戰)",
-      I: "I (影響/共鳴)",
-      S: "S (穩健/步調)",
-      C: "C (遵從/謹慎)"
+      D: "D (主導 / 挑戰)",
+      I: "I (影響 / 共鳴)",
+      S: "S (穩健 / 步調)",
+      C: "C (遵從 / 謹慎)"
     },
     radar_title: "行為風格相對權衡雷達圖",
     center_label: "基準平衡點 (0)"
@@ -53,6 +58,8 @@ export default {
     primary_double: "雙高並列風格：偏好同時側重於 {styles}，兩者並駕齊驅",
     primary_triple: "多維均衡風格：偏好在 {styles} 間呈現高度協同",
     primary_all_tie: "四維完全平衡：在受測情境中展現高度情境適應性，無單一主導風格",
-    disclaimer: "注意：本結果僅反映您在 24 組情境中的相對取捨偏好，非絕對能力評級。相對權重為經 +24 基線平移後之歸一化比例，非絕對動機佔比。本系統無常模，嚴禁進行跨人橫向對比。"
+    disclaimer: "注意：本結果僅反映您在 24 組情境中的相對取捨偏好，非絕對能力評級。相對權重為經 +24 基線平移後之歸一化比例，非絕對動機佔比。本系統無常模，嚴禁進行跨人橫向對比。",
+    btn_print: "列印 / 匯出 PDF",
+    btn_restart: "重新探索"
   }
 };
