@@ -4,7 +4,7 @@
  * 1. 題卡步進與作答狀態暫存 (純本機記憶體，零伺服器)
  * 2. 鍵盤快速流 (1-4 選 Most, Q-R 選 Least, Enter/Arrow 下一題)
  * 3. 呼叫 ScoringEngine 與 CompassChart 渲染報告
- * 4. 處理注意力檢查警示橫幅與多分支風格文案 (100% 雙語對齊、零 CSP 違規)
+ * 4. 處理注意力檢查警示橫幅與多分支風格文案 (100% 雙語對齊、零 CSP 違規、單向注意力題適配)
  */
 
 import { i18n } from './i18n.js';
@@ -63,19 +63,27 @@ class CompassApp {
 
     const q = questionsStructure[this.currentIndex];
     const currentResp = this.responses.get(q.id);
+    const isAttention = q.type === 'attention_check';
 
     // 數字鍵 1-4 選 Most (A, B, C, D)
     if (['1', '2', '3', '4'].includes(e.key)) {
       const optKey = ['A', 'B', 'C', 'D'][parseInt(e.key, 10) - 1];
       this.selectOption(q.id, 'most', optKey);
     }
-    // 字母鍵 Q, W, E, R 選 Least (A, B, C, D)
-    const leastKeys = { q: 'A', w: 'B', e: 'C', r: 'D', Q: 'A', W: 'B', E: 'C', R: 'D' };
-    if (leastKeys[e.key]) {
-      this.selectOption(q.id, 'least', leastKeys[e.key]);
+    // 字母鍵 Q, W, E, R 選 Least (A, B, C, D) —— 注意力題忽略 Least 鍵盤輸入
+    if (!isAttention) {
+      const leastKeys = { q: 'A', w: 'B', e: 'C', r: 'D', Q: 'A', W: 'B', E: 'C', R: 'D' };
+      if (leastKeys[e.key]) {
+        this.selectOption(q.id, 'least', leastKeys[e.key]);
+      }
     }
-    // 方向鍵前進與後退
-    if (e.key === 'ArrowRight' && currentResp.most && currentResp.least) {
+
+    // 方向鍵前進與後退 (注意力題只需選 Most 即可前進)
+    const canAdvance = isAttention 
+      ? currentResp.most !== null 
+      : (currentResp.most !== null && currentResp.least !== null);
+
+    if (e.key === 'ArrowRight' && canAdvance) {
       this.nextQuestion();
     }
     if (e.key === 'ArrowLeft' && this.currentIndex > 0) {
@@ -104,14 +112,19 @@ class CompassApp {
     const total = questionsStructure.length;
     const resp = this.responses.get(q.id);
     
-    // 安全取得雙語題庫內容（修復題目為 undefined）
+    // 安全取得雙語題庫內容（支援物件結構）
     const qData = i18n.t(`questions.q${q.id}`) || {};
 
     const isFirst = this.currentIndex === 0;
     const isLast = this.currentIndex === total - 1;
-    const isAnswered = resp.most !== null && resp.least !== null;
+    const isAttention = q.type === 'attention_check';
 
-    // 動態雙語標籤取值（消除寫死中文）
+    // 關鍵修復：注意力檢查題只需選 Most 即算答完，普通題需 Most 與 Least 兼具
+    const isAnswered = isAttention 
+      ? resp.most !== null 
+      : (resp.most !== null && resp.least !== null);
+
+    // 動態雙語標籤取值
     const btnMostText = i18n.t('ui.assessment.btn_most');
     const btnLeastText = i18n.t('ui.assessment.btn_least');
     const progressText = i18n.t('ui.assessment.progress')
@@ -132,12 +145,14 @@ class CompassApp {
                     data-q="${q.id}" data-type="most" data-key="${opt.key}">
               ${btnMostText}
             </button>
-            <button type="button" 
-                    class="btn-select btn-least ${isLeast ? 'active' : ''}" 
-                    aria-pressed="${isLeast}"
-                    data-q="${q.id}" data-type="least" data-key="${opt.key}">
-              ${btnLeastText}
-            </button>
+            ${!isAttention ? `
+              <button type="button" 
+                      class="btn-select btn-least ${isLeast ? 'active' : ''}" 
+                      aria-pressed="${isLeast}"
+                      data-q="${q.id}" data-type="least" data-key="${opt.key}">
+                ${btnLeastText}
+              </button>
+            ` : ''}
           </div>
           <div class="option-text">
             <span class="option-letter">${opt.key}.</span>
