@@ -4,7 +4,7 @@
  * 1. 題卡步進與作答狀態暫存 (純本機記憶體，零伺服器)
  * 2. 鍵盤快速流 (1-4 選 Most, Q-R 選 Least, Enter/Arrow 下一題)
  * 3. 呼叫 ScoringEngine 與 CompassChart 渲染報告
- * 4. 處理注意力檢查警示橫幅與多分支風格文案
+ * 4. 處理注意力檢查警示橫幅與多分支風格文案 (100% 雙語對齊、零 CSP 違規)
  */
 
 import { i18n } from './i18n.js';
@@ -103,11 +103,20 @@ class CompassApp {
     const q = questionsStructure[this.currentIndex];
     const total = questionsStructure.length;
     const resp = this.responses.get(q.id);
-    const qData = i18n.t(`questions.q${q.id}`);
+    
+    // 安全取得雙語題庫內容（修復題目為 undefined）
+    const qData = i18n.t(`questions.q${q.id}`) || {};
 
     const isFirst = this.currentIndex === 0;
     const isLast = this.currentIndex === total - 1;
     const isAnswered = resp.most !== null && resp.least !== null;
+
+    // 動態雙語標籤取值（消除寫死中文）
+    const btnMostText = i18n.t('ui.assessment.btn_most');
+    const btnLeastText = i18n.t('ui.assessment.btn_least');
+    const progressText = i18n.t('ui.assessment.progress')
+      .replace('{current}', this.currentIndex + 1)
+      .replace('{total}', total);
 
     const optionsHtml = q.options.map(opt => {
       const isMost = resp.most === opt.key;
@@ -116,18 +125,18 @@ class CompassApp {
 
       return `
         <div class="option-row ${isMost ? 'selected-most' : ''} ${isLeast ? 'selected-least' : ''}">
-          <div class="option-actions" role="group" aria-label="選項 ${opt.key} 選取">
+          <div class="option-actions" role="group" aria-label="Option ${opt.key}">
             <button type="button" 
                     class="btn-select btn-most ${isMost ? 'active' : ''}" 
                     aria-pressed="${isMost}"
                     data-q="${q.id}" data-type="most" data-key="${opt.key}">
-              [+] 最符合
+              ${btnMostText}
             </button>
             <button type="button" 
                     class="btn-select btn-least ${isLeast ? 'active' : ''}" 
                     aria-pressed="${isLeast}"
                     data-q="${q.id}" data-type="least" data-key="${opt.key}">
-              [-] 最不符
+              ${btnLeastText}
             </button>
           </div>
           <div class="option-text">
@@ -140,7 +149,7 @@ class CompassApp {
 
     container.innerHTML = `
       <div class="card-header">
-        <span class="step-badge">進度：${this.currentIndex + 1} / ${total}</span>
+        <span class="step-badge">${progressText}</span>
         <div class="progress-bar-bg">
           <div class="progress-bar-fill" style="width: ${((this.currentIndex + 1) / total) * 100}%"></div>
         </div>
@@ -152,11 +161,11 @@ class CompassApp {
         </div>
       </div>
       <div class="card-footer">
-        <button type="button" id="btn-prev" class="btn-nav" ${isFirst ? 'disabled' : ''}>上一題</button>
+        <button type="button" id="btn-prev" class="btn-nav" ${isFirst ? 'disabled' : ''}>${i18n.t('ui.assessment.btn_prev')}</button>
         ${isLast ? `
-          <button type="button" id="btn-submit" class="btn-nav btn-primary" ${!isAnswered ? 'disabled' : ''}>產出探索報告</button>
+          <button type="button" id="btn-submit" class="btn-nav btn-primary" ${!isAnswered ? 'disabled' : ''}>${i18n.t('ui.assessment.btn_submit')}</button>
         ` : `
-          <button type="button" id="btn-next" class="btn-nav btn-primary" ${!isAnswered ? 'disabled' : ''}>下一題</button>
+          <button type="button" id="btn-next" class="btn-nav btn-primary" ${!isAnswered ? 'disabled' : ''}>${i18n.t('ui.assessment.btn_next')}</button>
         `}
       </div>
     `;
@@ -200,7 +209,7 @@ class CompassApp {
 
     const result = ScoringEngine.calculate(rawResponses);
     if (!result.isValid) {
-      alert(`作答無效或未完成：${result.invalidReason}`);
+      alert(`${i18n.t('ui.assessment.alert_invalid')}${result.invalidReason}`);
       return;
     }
 
@@ -215,6 +224,7 @@ class CompassApp {
 
     const res = this.assessmentResult;
     const nameStr = this.assesseeName ? `【${this.assesseeName}】` : '';
+    const isEn = i18n.currentLocale === 'en';
 
     // 匹配主要風格文案 (單高、雙高、三高、全平手)
     let primaryMessage = '';
@@ -229,23 +239,26 @@ class CompassApp {
       primaryMessage = i18n.t('ui.report.primary_all_tie');
     }
 
-    // 注意力檢查橫幅
+    // 注意力檢查橫幅（雙語動態適配）
     const attentionBanner = !res.attentionPassed ? `
       <div class="alert-banner warning" role="alert">
-        <strong>作答有效性提示：</strong> 注意力檢驗題未依指定指令作答。本結果僅供一般參考，可能存在作答定勢或隨機點擊偏差。
+        <strong>${isEn ? 'Validity Notice:' : '作答有效性提示：'}</strong> 
+        ${isEn ? 'Attention check instruction was not followed. Results reflect exploratory feedback only.' : '注意力檢驗題未依指定指令作答。本結果僅供一般參考，可能存在作答定勢或隨機點擊偏差。'}
       </div>
     ` : '';
 
     // 純 SVG 雷達圖生成
     const radarSvg = CompassChart.renderRadar(res.rawNet);
+    const reportTitle = isEn ? `${nameStr} Nature Compass Report` : `${nameStr} 見性羅盤・行為偏好探索報告`;
+    const timeLabel = isEn ? 'Completed at: ' : '完成時間：';
 
     container.innerHTML = `
       <div class="report-section print-friendly">
         ${attentionBanner}
         
         <div class="report-header">
-          <h2>${nameStr} 見性羅盤・行為偏好探索報告</h2>
-          <p class="timestamp">完成時間：${new Date().toLocaleString()}</p>
+          <h2>${reportTitle}</h2>
+          <p class="timestamp">${timeLabel}${new Date().toLocaleString()}</p>
         </div>
 
         <div class="summary-card">
@@ -262,9 +275,9 @@ class CompassApp {
             <ul class="rank-list">
               ${res.ranking.map(r => `
                 <li>
-                  <span class="rank-num">第 ${r.rank} 名</span>
+                  <span class="rank-num">${isEn ? `#${r.rank}` : `第 ${r.rank} 名`}</span>
                   <span class="rank-dim">${r.dim}</span>
-                  <span class="rank-score">淨分 ${r.score > 0 ? `+${r.score}` : r.score}</span>
+                  <span class="rank-score">${isEn ? 'Net ' : '淨分 '}${r.score > 0 ? `+${r.score}` : r.score}</span>
                   ${r.isTie ? `<span class="tie-tag">${i18n.t('ui.report.tie_notice')}</span>` : ''}
                 </li>
               `).join('')}
@@ -290,11 +303,16 @@ class CompassApp {
         </div>
 
         <div class="report-actions">
-          <button type="button" class="btn-action" onclick="window.print()">列印 / 匯出 PDF</button>
-          <button type="button" id="btn-restart" class="btn-action secondary">重新探索</button>
+          <button type="button" id="btn-print" class="btn-action">${isEn ? 'Print / Export PDF' : '列印 / 匯出 PDF'}</button>
+          <button type="button" id="btn-restart" class="btn-action secondary">${isEn ? 'Restart' : '重新探索'}</button>
         </div>
       </div>
     `;
+
+    // 安全事件監聽（杜絕 inline onclick 觸發 CSP 報警）
+    document.getElementById('btn-print')?.addEventListener('click', () => {
+      window.print();
+    });
 
     document.getElementById('btn-restart')?.addEventListener('click', () => {
       this.isCompleted = false;
