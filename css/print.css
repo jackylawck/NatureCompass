@@ -1,0 +1,50 @@
+/**
+ * css/print.css - 列印與 PDF 匯出優化
+ */
+@page {
+  size: A4 portrait;
+  margin: 15mm;
+}
+
+@media print {
+  :root {
+    --radar-fill: rgba(2, 132, 199, 0.15);
+    --radar-stroke: #0284c7;
+    --radar-grid: #cbd5e1;
+    --radar-axis: #94a3b8;
+    --radar-text: #000000;
+  }
+
+  .locale-nav,
+  .btn-action,
+  .charter-box {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+
+  .container {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .compass-svg.print-friendly {
+    display: block;
+    width: 75% !important;
+    max-width: 360px !important;
+    margin: 15mm auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .report-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
