@@ -1,10 +1,20 @@
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: no-referrer
   Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Embedder-Policy: require-corp
   Cross-Origin-Resource-Policy: same-origin
-  Cache-Control: public, max-age=3600, must-revalidate
+
+# HTML 文件不快取，確保版本即時更新與修復生效
+/*.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# 靜態資源（JS, CSS, 圖示）適度快取
+/js/*
+  Cache-Control: public, max-age=86400, must-revalidate
+/css/*
+  Cache-Control: public, max-age=86400, must-revalidate
+/locales/*
+  Cache-Control: public, max-age=86400, must-revalidate
