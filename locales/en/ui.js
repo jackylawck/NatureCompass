@@ -19,11 +19,20 @@ export default {
   },
   form: {
     name_label: "Assessee Name (Optional):",
-    name_placeholder: "e.g., Alex Law"
+    name_placeholder: "e.g., Jarvis Son"
   },
   nav: {
     zh_btn: "繁體中文",
     en_btn: "English"
+  },
+  assessment: {
+    progress: "Progress: {current} / {total}",
+    btn_most: "[+] Most",
+    btn_least: "[-] Least",
+    btn_prev: "Previous",
+    btn_next: "Next",
+    btn_submit: "Generate Report",
+    alert_invalid: "Invalid or incomplete response: "
   },
   chart: {
     dims: {
