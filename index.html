@@ -1,24 +1,65 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-HK" prefix="og: https://ogp.me/ns#">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+  
+  <!-- 🔍 Google Search Console 驗證 -->
+  <meta name="google-site-verification" content="JZ5UohX-CcP_fQV0_DI9VadkKY4ZoTTkUifL88-fIcY" />
+
+  <!-- 🔍 基礎 SEO 核心標籤 -->
+  <title>🧭 見性羅盤 | Nature Compass - 零伺服器性格特質與行為偏好探索沙盒</title>
+  <meta name="description" content="見性羅盤 (Nature Compass) 是一款採用純前端、零伺服器架構的行為風格探索沙盒。基於 Ipsative 迫選模型，協助個人與團隊洞悉 D/I/S/C 相對偏好與決策盲點。資料不離設備，嚴守隱私安全。">
+  <meta name="keywords" content="見性羅盤, Nature Compass, DISC測評, 行為風格, 人格特質, 領導力教練, 零伺服器, PWA, 隱私安全, 心理計量沙盒, 組織發展, HR工具">
+  <meta name="author" content="Jacky Law">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://jackylawck.github.io/NatureCompass/">
+
+  <!-- 🌐 Open Graph / Facebook / LinkedIn 社交卡片 -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jackylawck.github.io/NatureCompass/">
+  <meta property="og:title" content="🧭 見性羅盤 | Nature Compass - 識得本性，方知所行">
+  <meta property="og:description" content="零伺服器・純前端性格特質與行為風格探索沙盒。純向量幾何雷達圖，無黑盒演算法，專為自我覺察與 1-on-1 教練對話設計。">
+  <meta property="og:image" content="https://jackylawck.github.io/NatureCompass/NatureCompass512icon.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="見性羅盤 Nature Compass 應用圖標">
+  <meta property="og:locale" content="zh_HK">
+  <meta property="og:site_name" content="見性羅盤 Nature Compass">
+
+  <!-- 🐦 Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="🧭 見性羅盤 | Nature Compass">
+  <meta name="twitter:description" content="識得本性，方知所行。極致簡約的純前端行為風格探索沙盒，嚴守隱私與資料主權。">
+  <meta name="twitter:image" content="https://jackylawck.github.io/NatureCompass/NatureCompass512icon.png">
+
+  <!-- 📱 PWA 與手機主畫面 (Add to Home Screen) 配置 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="見性羅盤">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0284c7">
-  
-  <!-- ADR-002: 本地與邊緣通用嚴格 CSP 防線 (完全無內聯、無外連、無 frame) -->
-  <meta http-equiv="Content-Security-Policy" 
-        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  
-  <title>見性羅盤 | Nature Compass</title>
-  <meta name="description" content="零伺服器・性格特質與行為偏好探索沙盒">
-  
-  <!-- 離線與樣式資源 -->
+  <meta name="application-name" content="見性羅盤 Nature Compass">
+
+  <!-- 📱 裝置圖標引用 (iOS + Android) -->
+  <link rel="apple-touch-icon" sizes="192x192" href="NatureCompass192icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="NatureCompass512icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="NatureCompass192icon.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="NatureCompass512icon.png">
   <link rel="manifest" href="manifest.json">
+
+  <!-- 🛡️ 企業級最高資安策略 (無外部連線、無內聯腳本、無 iframe 劫持) -->
+  <meta http-equiv="Content-Security-Policy" 
+        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none';">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(), gyroscope=(), microphone=(), camera=(), geolocation=(), payment=()">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- 樣式表 -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/print.css" media="print">
 </head>
 <body>
-  <!-- 頂部品牌與雙語切換導航 -->
+  <!-- 頂部品牌與語言切換 -->
   <header class="app-header">
     <div class="header-inner">
       <div class="brand">
@@ -32,15 +73,13 @@
     </div>
   </header>
 
-  <!-- 核心主視圖 -->
+  <!-- 主視圖 -->
   <main id="app-root" class="container">
-    <!-- 非高利害邊界告示 (ADR-003: 葉節點契約) -->
     <aside class="charter-box" role="note">
       <strong data-i18n="ui.charter.title">非高利害探索邊界宣告</strong>
       <p data-i18n="ui.charter.notice">本工具專供個人自我覺察與教練對話探索，嚴禁直接用於招聘篩選、績效裁決或任何高利害人力決策。</p>
     </aside>
 
-    <!-- 評估與題卡互動容器 -->
     <section id="assessment-container" class="card" aria-labelledby="form-label">
       <div class="input-group">
         <label id="form-label" for="assessee-name" data-i18n="ui.form.name_label">受測者稱謂（選填）：</label>
@@ -52,14 +91,12 @@
                maxlength="50" />
       </div>
 
-      <!-- 動態題卡與報告視口 (ARIA 實時廣播，確保屏幕閱讀器支援) -->
       <div id="card-viewport" aria-live="polite" role="region" aria-label="Assessment Viewport">
-        <!-- 題卡或探索報告由 app.js 安全動態掛載 -->
+        <!-- 題卡由 app.js 動態掛載 -->
       </div>
     </section>
   </main>
 
-  <!-- ADR-001: 唯一的 ESM 模組入口 (不使用任何內聯腳本) -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
