@@ -1,6 +1,11 @@
+/**
+ * locales/en/ui.js - English UI Dictionary
+ * License: CC BY-NC-SA 4.0 (Non-Commercial, ShareAlike)
+ */
+
 export default {
   meta: {
-    title: "Nature Compass | 見性羅盤",
+    title: "Nature Compass",
     tagline: "A Zero-Server Behavioral Reflection & Self-Discovery Sandbox"
   },
   charter: {
@@ -36,10 +41,10 @@ export default {
   },
   chart: {
     dims: {
-      D: "D (Dominance/Drive)",
-      I: "I (Influence/Rapport)",
-      S: "S (Steadiness/Pace)",
-      C: "C (Compliance/Caution)"
+      D: "D (Dominance / Drive)",
+      I: "I (Influence / Inspiration)",
+      S: "S (Steadiness / Pace)",
+      C: "C (Compliance / Precision)"
     },
     radar_title: "Behavioral Trade-off Radar Chart",
     center_label: "Equilibrium Baseline (0)"
@@ -53,6 +58,8 @@ export default {
     primary_double: "Double-High Blend: Tendencies equally emphasize {styles} in tandem",
     primary_triple: "Multi-dimensional Blend: Balanced synergy across {styles}",
     primary_all_tie: "Complete Equilibrium: Highly adaptable across all contexts with no single dominant style",
-    disclaimer: "Note: Results reflect individual contextual trade-offs within 24 forced choices, not absolute competence. Relative weights represent normalized ratios following a +24 baseline shift, not absolute motivation proportions. No norms applied; cross-individual comparisons are strictly invalid."
+    disclaimer: "Note: Results reflect individual contextual trade-offs within 24 forced choices, not absolute competence. Relative weights represent normalized ratios following a +24 baseline shift, not absolute motivation proportions. No norms applied; cross-individual comparisons are strictly invalid.",
+    btn_print: "Print / Export PDF",
+    btn_restart: "Restart Exploration"
   }
 };
