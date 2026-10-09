@@ -10,6 +10,11 @@
   --most-color: #10b981;
   --least-color: #f43f5e;
 
+  /* 提示橫幅色彩 */
+  --banner-bg: #fffbeb;
+  --banner-border: #f59e0b;
+  --banner-text: #b45309;
+
   /* 雷達圖向量色彩變數 */
   --radar-fill: rgba(2, 132, 199, 0.2);
   --radar-stroke: #0284c7;
@@ -25,6 +30,10 @@
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
     --border-color: #334155;
+
+    --banner-bg: rgba(245, 158, 11, 0.15);
+    --banner-border: #f59e0b;
+    --banner-text: #fde68a;
 
     --radar-fill: rgba(56, 189, 248, 0.25);
     --radar-stroke: #38bdf8;
@@ -67,6 +76,8 @@ body {
 .brand h1 { margin: 0; font-size: 20px; }
 .brand .tagline { margin: 4px 0 0; font-size: 13px; color: var(--text-muted); }
 
+.locale-nav { display: flex; gap: 8px; }
+
 .lang-btn {
   background: transparent;
   border: 1px solid var(--border-color);
@@ -75,10 +86,17 @@ body {
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
-  transition: background-color 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .lang-btn:hover { background: var(--border-color); }
+
+.lang-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #ffffff;
+  font-weight: 600;
+}
 
 /* 宣告提示 */
 .charter-box {
@@ -347,10 +365,35 @@ body {
   background: rgba(2, 132, 199, 0.06);
   padding: 16px 20px;
   border-radius: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .primary-summary { margin: 0; font-size: 16px; color: var(--primary-color); }
+
+/* 🌟 特質畫像與原型卡片 (對齊 app.js 動態渲染) */
+.archetype-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--primary-color);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.archetype-card h3 {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.archetype-card p {
+  margin: 8px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.archetype-card p strong {
+  color: var(--primary-color);
+}
 
 .report-grid {
   display: grid;
@@ -411,10 +454,11 @@ body {
 .btn-action.secondary { background: var(--border-color); color: var(--text-main); }
 .btn-action.secondary:hover { opacity: 0.85; }
 
+/* 注意力檢驗警示橫幅 (支援深淺色主題適配) */
 .alert-banner.warning {
-  background: #fffbeb;
-  border-left: 4px solid #f59e0b;
-  color: #b45309;
+  background: var(--banner-bg);
+  border-left: 4px solid var(--banner-border);
+  color: var(--banner-text);
   padding: 12px 16px;
   border-radius: 4px;
   margin-bottom: 20px;
