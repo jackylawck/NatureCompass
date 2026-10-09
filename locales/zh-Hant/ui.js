@@ -19,11 +19,20 @@ export default {
   },
   form: {
     name_label: "受測者稱謂（選填）：",
-    name_placeholder: "例如：Alex Law"
+    name_placeholder: "例如：Jarvis Son"
   },
   nav: {
     zh_btn: "繁體中文",
     en_btn: "English"
+  },
+  assessment: {
+    progress: "進度：{current} / {total}",
+    btn_most: "[+] 最符合",
+    btn_least: "[-] 最不符",
+    btn_prev: "上一題",
+    btn_next: "下一題",
+    btn_submit: "產出探索報告",
+    alert_invalid: "作答無效或未完成："
   },
   chart: {
     dims: {
