@@ -23,7 +23,7 @@ class I18nManager {
       try {
         saved = localStorage.getItem('nature_compass_locale');
       } catch (e) {
-        // localStorage 降級
+        // localStorage 降級處理
       }
       browserLang = navigator?.language || 'en';
     }
@@ -32,10 +32,18 @@ class I18nManager {
     this.currentLocale = detected === 'zh-Hans' ? 'zh-Hant' : detected;
   }
 
+  /**
+   * 取得字典項目
+   * 支援回傳純文字字串，亦支援回傳題庫結構物件 (如 questions.q1)
+   * 若查無資料則安全 fallback 回傳傳入的 path
+   */
   t(path) {
+    if (!path || typeof path !== 'string') return '';
     const activeDict = dictionaries[this.currentLocale] ?? dictionaries['en'];
     const resolved = path.split('.').reduce((obj, key) => obj?.[key], activeDict);
-    return (typeof resolved === 'string' && resolved.length > 0) ? resolved : path;
+
+    // 只要有解析出有效內容（包含 string 或 object），均予返回
+    return (resolved !== undefined && resolved !== null) ? resolved : path;
   }
 
   setLocale(locale) {
@@ -50,20 +58,31 @@ class I18nManager {
 
     if (typeof document !== 'undefined') {
       document.documentElement.lang = this.currentLocale;
-      document.title = this.t('ui.meta.title');
+      const metaTitle = this.t('ui.meta.title');
+      if (typeof metaTitle === 'string') {
+        document.title = metaTitle;
+      }
 
+      // 靜態葉節點文本替換 (確保僅在取回字串時更新，防止物件破壞 DOM)
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        el.textContent = this.t(key);
+        const val = this.t(key);
+        if (typeof val === 'string') {
+          el.textContent = val;
+        }
       });
 
+      // 標籤屬性替換 (例如 placeholder:ui.form.name_placeholder)
       document.querySelectorAll('[data-i18n-attr]').forEach(el => {
         const rawSpec = el.getAttribute('data-i18n-attr');
         const colonIndex = rawSpec.indexOf(':');
         if (colonIndex !== -1) {
           const attr = rawSpec.substring(0, colonIndex).trim();
           const key = rawSpec.substring(colonIndex + 1).trim();
-          el.setAttribute(attr, this.t(key));
+          const val = this.t(key);
+          if (typeof val === 'string') {
+            el.setAttribute(attr, val);
+          }
         }
       });
     }
