@@ -1,0 +1,165 @@
+/**
+ * js/engine.js - 見性羅盤確定性計分核心
+ * 
+ * 架構分層：
+ * 1. calculate(responses): 輸入校驗、作答合法性審計、提取 rawNet
+ * 2. rankAndWeigh(rawNet): 純數學映射、最大餘數法百分比、平手排序
+ */
+
+import { questionsStructure } from './questions.js';
+
+export class ScoringEngine {
+  /**
+   * 第一層：解析作答並提取原始淨分 (含嚴格防禦性校驗)
+   * @param {Array<{ id: number, most: string, least: string }>} responses
+   */
+  static calculate(responses) {
+    if (!Array.isArray(responses) || responses.length === 0) {
+      return { isValid: false, invalidReason: 'EMPTY_RESPONSES' };
+    }
+
+    const rawCounts = {
+      D: { most: 0, least: 0 },
+      I: { most: 0, least: 0 },
+      S: { most: 0, least: 0 },
+      C: { most: 0, least: 0 }
+    };
+
+    let attentionPassed = true;
+    const qMap = new Map(questionsStructure.map(q => [q.id, q]));
+
+    for (const resp of responses) {
+      const q = qMap.get(resp.id);
+      if (!q) continue;
+
+      // 檢查 1: 同題 Most 與 Least 絕不可相同
+      if (resp.most && resp.least && resp.most === resp.least) {
+        return { isValid: false, invalidReason: `IDENTICAL_CHOICE_AT_Q${resp.id}` };
+      }
+
+      // 注意力校驗題處理
+      if (q.type === 'attention_check') {
+        const expectedMost = q.expected?.most;
+        const expectedLeast = q.expected?.least;
+
+        if (expectedMost && resp.most !== expectedMost) attentionPassed = false;
+        if (expectedLeast && resp.least !== expectedLeast) attentionPassed = false;
+        continue;
+      }
+
+      // 檢查 2: 防禦無效 key（防靜默跳過導致淨偏好不為 0）
+      const mostOpt = q.options.find(o => o.key === resp.most);
+      const leastOpt = q.options.find(o => o.key === resp.least);
+
+      if (!mostOpt || !leastOpt) {
+        return { isValid: false, invalidReason: `INVALID_OPTION_AT_Q${resp.id}` };
+      }
+
+      rawCounts[mostOpt.dim].most += 1;
+      rawCounts[leastOpt.dim].least += 1;
+    }
+
+    // 計算原始淨偏好
+    const rawNet = {
+      D: rawCounts.D.most - rawCounts.D.least,
+      I: rawCounts.I.most - rawCounts.I.least,
+      S: rawCounts.S.most - rawCounts.S.least,
+      C: rawCounts.C.most - rawCounts.C.least
+    };
+
+    // 檢查 3: 數學守恆硬約束 (4 維淨分總和必須嚴格等於 0)
+    const netSum = rawNet.D + rawNet.I + rawNet.S + rawNet.C;
+    if (netSum !== 0) {
+      return { isValid: false, invalidReason: `NET_SUM_NOT_ZERO:${netSum}` };
+    }
+
+    // 調用純數學分層
+    const mathResult = ScoringEngine.rankAndWeigh(rawNet);
+
+    return {
+      ...mathResult,
+      attentionPassed,
+      isValid: true
+    };
+  }
+
+  /**
+   * 第二層：純數學映射（可直接用於單元測試注入）
+   * @param {{ D: number, I: number, S: number, C: number }} rawNet
+   */
+  static rankAndWeigh(rawNet) {
+    if (!rawNet || typeof rawNet !== 'object') {
+      throw new TypeError('rankAndWeigh requires a rawNet object');
+    }
+
+    // 1. 基線平移 +24，映射至 [0, 48]，總基數恆為 96
+    const shifted = {
+      D: (rawNet.D ?? 0) + 24,
+      I: (rawNet.I ?? 0) + 24,
+      S: (rawNet.S ?? 0) + 24,
+      C: (rawNet.C ?? 0) + 24
+    };
+    const totalShifted = shifted.D + shifted.I + shifted.S + shifted.C;
+
+    // 2. 最大餘數法（Largest Remainder Method）整數百分比化
+    const rawWeights = {
+      D: (shifted.D / totalShifted) * 100,
+      I: (shifted.I / totalShifted) * 100,
+      S: (shifted.S / totalShifted) * 100,
+      C: (shifted.C / totalShifted) * 100
+    };
+
+    const flooredWeights = {
+      D: Math.floor(rawWeights.D),
+      I: Math.floor(rawWeights.I),
+      S: Math.floor(rawWeights.S),
+      C: Math.floor(rawWeights.C)
+    };
+
+    const currentSum = flooredWeights.D + flooredWeights.I + flooredWeights.S + flooredWeights.C;
+    const remainder = 100 - currentSum;
+
+    const fractionList = Object.keys(rawWeights).map(k => ({
+      dim: k,
+      fraction: rawWeights[k] - flooredWeights[k]
+    })).sort((a, b) => b.fraction - a.fraction);
+
+    for (let i = 0; i < remainder; i++) {
+      flooredWeights[fractionList[i].dim] += 1;
+    }
+
+    // 3. 序數排名與平手處理
+    const sortedDims = Object.entries(rawNet)
+      .map(([dim, score]) => ({ dim, score }))
+      .sort((a, b) => b.score - a.score);
+
+    const ranking = [];
+    let currentRank = 1;
+    for (let i = 0; i < sortedDims.length; i++) {
+      const isTieWithPrev = i > 0 && sortedDims[i].score === sortedDims[i - 1].score;
+      const isTieWithNext = i < sortedDims.length - 1 && sortedDims[i].score === sortedDims[i + 1].score;
+      const isTie = isTieWithPrev || isTieWithNext;
+
+      if (!isTieWithPrev) {
+        currentRank = i + 1;
+      }
+
+      ranking.push({
+        dim: sortedDims[i].dim,
+        score: sortedDims[i].score,
+        rank: currentRank,
+        isTie
+      });
+    }
+
+    const maxScore = sortedDims[0].score;
+    const primary = sortedDims.filter(d => d.score === maxScore).map(d => d.dim);
+
+    return {
+      ranking,
+      weights: flooredWeights,
+      rawNet,
+      primary
+    };
+  }
+}
