@@ -3,15 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0284c7">
+  
+  <!-- ADR-002: 本地與邊緣通用嚴格 CSP 防線 (完全無內聯、無外連、無 frame) -->
   <meta http-equiv="Content-Security-Policy" 
         content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  
   <title>見性羅盤 | Nature Compass</title>
   <meta name="description" content="零伺服器・性格特質與行為偏好探索沙盒">
+  
+  <!-- 離線與樣式資源 -->
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/print.css" media="print">
 </head>
 <body>
+  <!-- 頂部品牌與雙語切換導航 -->
   <header class="app-header">
     <div class="header-inner">
       <div class="brand">
@@ -25,24 +32,34 @@
     </div>
   </header>
 
+  <!-- 核心主視圖 -->
   <main id="app-root" class="container">
+    <!-- 非高利害邊界告示 (ADR-003: 葉節點契約) -->
     <aside class="charter-box" role="note">
       <strong data-i18n="ui.charter.title">非高利害探索邊界宣告</strong>
       <p data-i18n="ui.charter.notice">本工具專供個人自我覺察與教練對話探索，嚴禁直接用於招聘篩選、績效裁決或任何高利害人力決策。</p>
     </aside>
 
-    <section id="assessment-container" class="card">
+    <!-- 評估與題卡互動容器 -->
+    <section id="assessment-container" class="card" aria-labelledby="form-label">
       <div class="input-group">
-        <label for="assessee-name" data-i18n="ui.form.name_label">受測者稱謂（選填）：</label>
-        <input type="text" id="assessee-name" data-i18n-attr="placeholder:ui.form.name_placeholder" placeholder="例如：Alex Law" autocomplete="off" />
+        <label id="form-label" for="assessee-name" data-i18n="ui.form.name_label">受測者稱謂（選填）：</label>
+        <input type="text" 
+               id="assessee-name" 
+               data-i18n-attr="placeholder:ui.form.name_placeholder" 
+               placeholder="例如：Alex Law" 
+               autocomplete="off" 
+               maxlength="50" />
       </div>
 
-      <div id="card-viewport" aria-live="polite">
-        <!-- 題卡由 app.js 動態掛載 -->
+      <!-- 動態題卡與報告視口 (ARIA 實時廣播，確保屏幕閱讀器支援) -->
+      <div id="card-viewport" aria-live="polite" role="region" aria-label="Assessment Viewport">
+        <!-- 題卡或探索報告由 app.js 安全動態掛載 -->
       </div>
     </section>
   </main>
 
+  <!-- ADR-001: 唯一的 ESM 模組入口 (不使用任何內聯腳本) -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
