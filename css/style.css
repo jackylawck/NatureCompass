@@ -10,7 +10,7 @@
   --most-color: #10b981;
   --least-color: #f43f5e;
 
-  /* 雷達圖變數 */
+  /* 雷達圖向量色彩變數 */
   --radar-fill: rgba(2, 132, 199, 0.2);
   --radar-stroke: #0284c7;
   --radar-grid: #e2e8f0;
@@ -54,6 +54,7 @@ body {
   background: var(--card-bg);
   padding: 16px 0;
 }
+
 .header-inner {
   max-width: 820px;
   margin: 0 auto;
@@ -62,6 +63,7 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+
 .brand h1 { margin: 0; font-size: 20px; }
 .brand .tagline { margin: 4px 0 0; font-size: 13px; color: var(--text-muted); }
 
@@ -73,7 +75,9 @@ body {
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
+  transition: background-color 0.15s ease;
 }
+
 .lang-btn:hover { background: var(--border-color); }
 
 /* 宣告提示 */
@@ -85,7 +89,72 @@ body {
   margin-bottom: 24px;
   font-size: 13px;
 }
+
 .charter-box strong { display: block; margin-bottom: 4px; color: var(--primary-color); }
+.charter-box p { margin: 0; }
+
+/* 📖 操作指引與折疊箱樣式 */
+.guide-accordion {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.guide-summary {
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(2, 132, 199, 0.04);
+  color: var(--primary-color);
+  user-select: none;
+  outline: none;
+}
+
+.guide-summary:hover {
+  background: rgba(2, 132, 199, 0.08);
+}
+
+.guide-content {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.guide-heading {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.guide-card {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.guide-card strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: var(--primary-color);
+}
+
+.guide-card p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
 
 /* 主卡片容器 */
 .card {
@@ -93,7 +162,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 28px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .input-group { margin-bottom: 20px; }
@@ -106,6 +175,12 @@ body {
   border-radius: 6px;
   background: transparent;
   color: var(--text-main);
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
 }
 
 /* 進度條 */
@@ -118,12 +193,18 @@ body {
   margin-top: 8px;
   overflow: hidden;
 }
-.progress-bar-fill { height: 100%; background: var(--primary-color); transition: width 0.25s ease; }
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.25s ease;
+}
 
 .question-prompt { font-size: 18px; margin: 0 0 20px; font-weight: 600; }
 
 /* 選項清單 */
 .options-container { display: flex; flex-direction: column; gap: 12px; }
+
 .option-row {
   display: flex;
   align-items: center;
@@ -131,12 +212,21 @@ body {
   padding: 12px 16px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
-.option-row.selected-most { border-color: var(--most-color); background: rgba(16, 185, 129, 0.05); }
-.option-row.selected-least { border-color: var(--least-color); background: rgba(244, 63, 94, 0.05); }
+
+.option-row.selected-most {
+  border-color: var(--most-color);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.option-row.selected-least {
+  border-color: var(--least-color);
+  background: rgba(244, 63, 94, 0.05);
+}
 
 .option-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
 .btn-select {
   border: 1px solid var(--border-color);
   background: transparent;
@@ -145,12 +235,29 @@ body {
   font-size: 12px;
   cursor: pointer;
   color: var(--text-muted);
+  outline: none;
+  transition: all 0.15s ease;
 }
-.btn-select.btn-most.active { background: var(--most-color); color: #fff; border-color: var(--most-color); }
-.btn-select.btn-least.active { background: var(--least-color); color: #fff; border-color: var(--least-color); }
+
+.btn-select:focus-visible {
+  outline: 2px solid var(--primary-color);
+}
+
+.btn-select.btn-most.active {
+  background: var(--most-color);
+  color: #ffffff;
+  border-color: var(--most-color);
+}
+
+.btn-select.btn-least.active {
+  background: var(--least-color);
+  color: #ffffff;
+  border-color: var(--least-color);
+}
 
 .option-text { display: flex; gap: 8px; font-size: 15px; }
 .option-letter { font-weight: bold; color: var(--text-muted); }
+.option-desc { line-height: 1.5; }
 
 /* 按鈕操作欄 */
 .card-footer {
@@ -160,6 +267,7 @@ body {
   padding-top: 20px;
   border-top: 1px solid var(--border-color);
 }
+
 .btn-nav {
   padding: 10px 20px;
   border-radius: 6px;
@@ -168,9 +276,67 @@ body {
   color: var(--text-main);
   cursor: pointer;
   font-weight: 500;
+  outline: none;
+  transition: all 0.15s ease;
 }
-.btn-nav.btn-primary { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
-.btn-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-nav:focus-visible {
+  outline: 2px solid var(--primary-color);
+}
+
+.btn-nav.btn-primary {
+  background: var(--primary-color);
+  color: #ffffff;
+  border-color: var(--primary-color);
+}
+
+.btn-nav.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.btn-nav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 🧭 SVG 雷達圖組件樣式 (對齊 chart.js 渲染節點) */
+.compass-svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.radar-grid-ring {
+  fill: none;
+  stroke: var(--radar-grid);
+  stroke-width: 1;
+}
+
+.radar-axis-line {
+  stroke: var(--radar-axis);
+  stroke-width: 1;
+}
+
+.radar-center-point {
+  fill: var(--radar-axis);
+}
+
+.radar-polygon {
+  fill: var(--radar-fill);
+  stroke: var(--radar-stroke);
+  stroke-width: 2;
+}
+
+.radar-vertex {
+  fill: var(--radar-stroke);
+}
+
+.radar-label {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--radar-text);
+}
 
 /* 報告樣式 */
 .report-header { text-align: center; margin-bottom: 24px; }
@@ -183,6 +349,7 @@ body {
   border-radius: 8px;
   margin-bottom: 24px;
 }
+
 .primary-summary { margin: 0; font-size: 16px; color: var(--primary-color); }
 
 .report-grid {
@@ -192,11 +359,13 @@ body {
   align-items: center;
   margin-bottom: 24px;
 }
+
 @media (max-width: 640px) {
   .report-grid { grid-template-columns: 1fr; }
 }
 
 .rank-list { list-style: none; padding: 0; margin: 0 0 20px; }
+
 .rank-list li {
   display: flex;
   justify-content: space-between;
@@ -204,7 +373,8 @@ body {
   border-bottom: 1px dashed var(--border-color);
   font-size: 14px;
 }
-.tie-tag { font-size: 12px; color: var(--primary-color); }
+
+.tie-tag { font-size: 12px; color: var(--primary-color); margin-left: 6px; }
 
 .weight-bars { display: flex; flex-direction: column; gap: 8px; }
 .weight-item { display: flex; align-items: center; gap: 10px; font-size: 13px; }
@@ -219,19 +389,27 @@ body {
   border-top: 1px solid var(--border-color);
   padding-top: 16px;
   margin-bottom: 24px;
+  line-height: 1.5;
 }
 
 .report-actions { display: flex; justify-content: center; gap: 16px; }
+
 .btn-action {
   padding: 10px 24px;
   background: var(--primary-color);
-  color: #fff;
+  color: #ffffff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
+  outline: none;
+  transition: all 0.15s ease;
 }
+
+.btn-action:hover { background: var(--primary-hover); }
+.btn-action:focus-visible { outline: 2px solid var(--primary-color); }
 .btn-action.secondary { background: var(--border-color); color: var(--text-main); }
+.btn-action.secondary:hover { opacity: 0.85; }
 
 .alert-banner.warning {
   background: #fffbeb;
