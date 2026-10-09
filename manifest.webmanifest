@@ -1,0 +1,21 @@
+{
+  "name": "見性羅盤 | Nature Compass",
+  "short_name": "NatureCompass",
+  "description": "Zero-server behavioral reflection and self-discovery sandbox",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "./NatureCompass192icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./NatureCompass512icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
