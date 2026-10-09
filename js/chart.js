@@ -2,7 +2,8 @@
  * js/chart.js - 純 SVG 向量雷達圖繪製模組
  * ADR-006:
  * 1. 中心為 0（基準中性），外圈為 +24（正向偏好顯影，負值安全收縮至中心）
- * 2. 顏色與樣式交由 CSS Class / CSS 變數控制，支援列印與深色模式
+ * 2. 畫布預留充足邊距，杜絕左右長文本標籤被邊界裁切 (Text Clipping)
+ * 3. 純 CSS Class 控制樣式，零內聯 style，完美契合嚴格 CSP 與列印模式
  */
 
 import { i18n } from './i18n.js';
@@ -15,29 +16,29 @@ export class CompassChart {
    */
   static renderRadar(rawNet) {
     if (!rawNet || typeof rawNet !== 'object') {
-      return '<svg class="compass-svg" viewBox="0 0 360 360"></svg>';
+      return '<svg class="compass-svg" viewBox="0 0 420 420"></svg>';
     }
 
-    const size = 360;
-    const center = 180;
+    // 擴大畫布至 420x420，給雙語長標籤預留安全邊界
+    const size = 420;
+    const center = 210;
     const radius = 110;
 
     // 頂部 D (-90°), 右側 I (0°), 底部 S (90°), 左側 C (180°)
     const dims = [
-      { key: 'D', angle: -Math.PI / 2 },
-      { key: 'I', angle: 0 },
-      { key: 'S', angle: Math.PI / 2 },
-      { key: 'C', angle: Math.PI }
+      { key: 'D', angle: -Math.PI / 2, anchor: 'middle', dy: -12 },
+      { key: 'I', angle: 0, anchor: 'start', dy: 4 },
+      { key: 'S', angle: Math.PI / 2, anchor: 'middle', dy: 20 },
+      { key: 'C', angle: Math.PI, anchor: 'end', dy: 4 }
     ];
 
-    // 刻度圈：6, 12, 18, 24（中心點為 0，外圈為 +24 最大正向取捨）
+    // 刻度圈：6, 12, 18, 24（中心點為 0，外圈為 +24）
     const rings = [6, 12, 18, 24].map(val => {
       const r = (val / 24) * radius;
-      return `<circle cx="${center}" cy="${center}" r="${r.toFixed(1)}" 
-              class="radar-grid-ring" />`;
+      return `<circle cx="${center}" cy="${center}" r="${r.toFixed(1)}" class="radar-grid-ring" />`;
     }).join('');
 
-    // 計算四個數據點坐標 (負值代表未被青睞，收斂於中心點 0，正值按幅度外顯)
+    // 計算四個數據點坐標 (負值收斂至中心 0，正值按幅度外顯)
     const points = dims.map(d => {
       const positiveVal = Math.max(0, rawNet[d.key] ?? 0);
       const r = (positiveVal / 24) * radius;
@@ -46,19 +47,19 @@ export class CompassChart {
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
 
-    // 標籤坐標與文字
+    // 標籤位置計算（邊距安全距離：左右 18px，上下 16px）
     const labels = dims.map(d => {
-      const labelRadius = radius + 28;
-      const x = center + labelRadius * Math.cos(d.angle);
-      const y = center + labelRadius * Math.sin(d.angle);
+      const labelOffset = d.key === 'D' || d.key === 'S' ? 18 : 16;
+      const x = center + (radius + labelOffset) * Math.cos(d.angle);
+      const y = center + (radius + labelOffset) * Math.sin(d.angle) + d.dy;
       const labelText = i18n.t(`ui.chart.dims.${d.key}`);
       const netVal = rawNet[d.key] ?? 0;
       const formattedVal = netVal > 0 ? `+${netVal}` : `${netVal}`;
 
       return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" 
-              class="radar-label"
-              text-anchor="middle" 
-              dominant-baseline="central">${labelText}: ${formattedVal}</text>`;
+                    class="radar-label"
+                    text-anchor="${d.anchor}" 
+                    dominant-baseline="central">${labelText}: ${formattedVal}</text>`;
     }).join('');
 
     const titleText = i18n.t('ui.chart.radar_title');
@@ -75,7 +76,7 @@ export class CompassChart {
           <line x1="${center}" y1="${center - radius}" x2="${center}" y2="${center + radius}" class="radar-axis-line" />
         </g>
         <!-- 偏好幾何多邊形 -->
-        <polygon points="${points}" class="radar-polygon" />
+        <polygon points="${points}" class="radar-polygon" stroke-linejoin="round" />
         <!-- 數據頂點錨點 -->
         ${dims.map(d => {
           const positiveVal = Math.max(0, rawNet[d.key] ?? 0);
